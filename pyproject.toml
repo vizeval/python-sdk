@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "vizeval"
-version = "0.1.0"
+version = "0.1.1"
 description = "SDK para integração com Vizeval - Avaliação especializada de LLMs na área da saúde"
 authors = [
     {name = "Vizeval Team", email = "contato@vizeval.com"},

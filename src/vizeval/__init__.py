@@ -11,7 +11,7 @@ from .models import EvaluationRequest, EvaluationResponse, VizevalConfig
 from .evaluators import Evaluator
 from .exceptions import VizevalError, VizevalAPIError, VizevalConfigError
 
-__version__ = "0.1.0"
+__version__ = "0.1.1"
 __all__ = [
     "VizevalClient",
     "OpenAI",

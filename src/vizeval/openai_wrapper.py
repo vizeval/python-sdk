@@ -214,10 +214,36 @@ class CompletionsWrapper:
                     best_response = response
                     best_evaluation = evaluation
                 
-                # Se não é a última tentativa, ajustar parâmetros para retry
+                # Se não é a última tentativa, acrescentar contexto e ajustar parâmetros para retry
                 if attempt < config.max_retries:
-                    kwargs = self._adjust_parameters_for_retry(kwargs, attempt + 1)
-                    logger.info(f"Tentativa {attempt + 1} não passou do threshold ({evaluation.score}), tentando novamente...")
+                    # 1) Mensagem do assistente com a resposta reprovada
+                    assistant_msg = {
+                        "role": "assistant",
+                        "content": llm_response
+                    }
+
+                    # 2) Mensagem de crítica/feedback proveniente da avaliação Vizeval
+                    score_str = f"{evaluation.score:.3f}" if evaluation.score is not None else "N/A"
+
+                    critique_content = (
+                        "Sua última resposta foi reprovada pela avaliação de qualidade médica."
+                        "Considerando o score {score_str}, reescreva a resposta anterior para melhorar a qualidade médica."
+                    )
+
+                    critique_msg = {
+                        "role": "system",
+                        "content": critique_content
+                    }
+
+                    # Construir novo array de mensagens incluindo histórico e feedback
+                    new_kwargs = copy.deepcopy(kwargs)
+                    new_kwargs["messages"] = kwargs["messages"] + [assistant_msg, critique_msg]
+
+                    # Ajustar parâmetros (temperature, top_p, etc.) e seguir para próximo retry
+                    kwargs = self._adjust_parameters_for_retry(new_kwargs, attempt + 1)
+                    logger.info(
+                        f"Tentativa {attempt + 1} não passou do threshold ({evaluation.score}), tentando novamente com contexto adicional..."
+                    )
                 
             except Exception as e:
                 logger.error(f"Erro na tentativa {attempt + 1}: {str(e)}")
